@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "a node.js server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trytomakeit1/server.git"
+  },
+  "keywords": [
+    "node.js",
+    "express",
+    "server"
+  ],
+  "author": "Anahita",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/trytomakeit1/server/issues"
+  },
+  "homepage": "https://github.com/trytomakeit1/server#readme",
+
+  "dependencies": {
+    "express": "^4.17.1"
+
+  }
+}
