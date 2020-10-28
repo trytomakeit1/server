@@ -23,7 +23,9 @@
   "homepage": "https://github.com/trytomakeit1/server#readme",
 
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mongodb":"^3.5.9",
+    "jsonwebtoken":"8.5.1"
 
   }
 }

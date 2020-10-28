@@ -30,7 +30,7 @@ var options = {
     cert: cert
 };
 
-var server = http.createServer(app);
-server.listen(8080, function(){console.log("listening to port 8080");});
+//var server = http.createServer(app);
+app.listen(8080, function(){console.log("listening to port 8080");});
 
-https.createServer(options, app).listen(4433, function(){console.log("listening to port 4433")});
+//https.createServer(options, app).listen(4433, function(){console.log("listening to port 4433")});
