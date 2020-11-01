@@ -1,9 +1,11 @@
 var mongodb = require("mongodb").MongoClient;
+var ObjectId = require("mongodb").ObjectID;
 
 var jwt = require("jsonwebtoken");
 var url =  "mongodb://localhost:27017";
 var dbName = "gdb";
 var userCollection = "users";
+var movieCollection = "movies";
 
 var secretCode = "newserver1*";
 var expiresIn = 3600;
@@ -129,7 +131,52 @@ class dbCalls {
             }
             if(jwtRes){
                 console.log("token validity result", jwtRes);
-                cb(jwtRes);
+                cb(null, jwtRes);
+            }
+
+        });
+    }
+
+    
+    static rentMovie(params, cb){
+
+        mongodb.connect(url, function(err, mongoClient){
+
+            if(err){
+                console.log("Error-rentMovie: Problem mongodb connect", err);
+                cb("There is a problem connecting the database. Try again later.");
+
+            } else{
+
+                var db = mongoClient.db(dbName);
+                db.collection(userCollection)
+                .findOne({username:params.username}, function(err, res){
+
+                    if (err) {
+                        console.error("Error occured in finding user", err);
+                        cb("A problem occured. contact the administrator or try again later.");
+                    
+                    } else if(!res || res === null){
+                        cb("The user doesn't exist");
+                    } else {
+                        console.log(res);
+
+                        // the user exists, now add it to the movie collection
+                        db.collection(movieCollection).update({userId: new ObjectId(res._id)},
+                            {$push:{movies:{movieId: params.movieId, rentDate:new Date()}}}, {upsert: true}, 
+                            function(err, res){
+
+                                if (err) {
+                                    console.error("Error occured in adding movie", err);
+                                    cb("A problem occured. contact the administrator or try again later.");
+
+                                } else {
+                                    console.log("Movie added successfully" + res);
+                                    cb(null, "Successfully rented the movie");
+                                }
+                            });
+                    }
+                });
             }
 
         });

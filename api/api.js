@@ -117,4 +117,40 @@ router.post('/verifyToken', function(req, res){
     }
 
 });
+
+
+router.post('/rentMovie', function(req, res){
+    var request = req.body;
+
+    var validityCheck = true;
+    if(!request.username || request.username === '') {
+        console.log("username is missing");
+        validityCheck = false;
+    }if(!request.movieId || request.movieId === '') {
+        console.log("movie ID is missing");
+        validityCheck = false;
+    }
+    if(validityCheck === true) {
+
+        dbCalls.rentMovie({username: request.username, movieId: request.movieId}, function(err, dbCallsRes){
+
+            var result = {
+                error: err,
+                result: dbCallsRes
+            };
+
+            res.send(result);
+        });
+
+    } else {
+        var result = {
+            error: "parameters missing",
+            result: null
+        };
+
+        res.send(result);
+   }
+});
+
+
 module.exports = router;
