@@ -187,7 +187,6 @@ class dbCalls {
 
     static moviesRented(params, cb){
 
-        console.log("params in movieRented dbcall", params);
         mongodb.connect(url, function(err, mongoClient){
 
             if(err){
@@ -195,6 +194,9 @@ class dbCalls {
                 cb("There is a problem connecting the database. Try again later.");
 
             } else{
+
+                var rentedMovies = [];
+                var finalRentedMovies = [];
 
                 var db = mongoClient.db(dbName);
 
@@ -210,12 +212,42 @@ class dbCalls {
                             cb("A problem occured. contact the administrator or try again later.");
 
                         } else {
-                            console.log("Movies retrieved successfully", res);
-                            cb(null, res.moviesRented[0].movies);
+
+                            // for each movie, get details
+                            var moviesId = [];
+                            rentedMovies = res.moviesRented[0].movies;
+                            for(var i = 0; i < res.moviesRented[0].movies.length; i++){
+                                moviesId.push(new ObjectId(res.moviesRented[0].movies[i].movieId));
+                            }
+
+                            db.collection(movieCollection).find({_id: {$in:moviesId}}).toArray(function(err, res){
+
+                                if(err){
+                                    console.error("Error occured in retrieving rented movies", err);
+                                    cb("A problem occured. contact the administrator or try again later.");
+                                } else{
+
+                                    for(var j  = 0; j < rentedMovies.length; j++){
+                                        for(var k = 0 ; k < res.length ; k++) {
+                                            if(res[k]._id.toString() === rentedMovies[j].movieId){
+                                                var o = {
+                                                    movie: res,
+                                                    rentDate: rentedMovies[j].rentDate
+                                                };
+                                                finalRentedMovies.push(o);
+                                            }
+                                        }
+                                    }
+
+                                    console.log("Movies retrieved successfully", res);
+                                    cb(null,  finalRentedMovies);
+                                }
+                            });
+
                         }
 
                 });
-              
+
             }
         });
 
