@@ -22,6 +22,7 @@ app.use(bodyParser.json());
 //* using cors module, can use same origin (localhost) requests.
 app.use("/api",cors(), api);
 
+app.use(express.static('public'));
 var key = fs.readFileSync('./bin/2179541_localhost.key');
 var cert = fs.readFileSync('./bin/2179541_localhost.cert');
 

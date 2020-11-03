@@ -27,11 +27,11 @@ router.post("/login", function(req,res){
     }
     if (validityCheck === true) {
         dbCalls.verifyUser({username:req.body.email, password:req.body.password}, 
-            function(err, dbCallsres) {
+            function(err, dbCallsRes) {
 
             var result = {
                 error: err,
-                result: dbCallsres
+                result: dbCallsRes
             };
             res.send(result);
         });
@@ -151,6 +151,71 @@ router.post('/rentMovie', function(req, res){
         res.send(result);
    }
 });
+
+
+
+router.get('/rentedMovies/:username', function(req, res){
+
+    if(!req.params.username || req.params.username === '') {
+
+        var result = {
+            error: "username missing",
+            result: null
+        };
+        res.send(result);
+
+    } else{
+
+        dbCalls.moviesRented({username:req.params.username}, function(err, dbCallsRes){
+
+            var result = {
+                error: err,
+                result: dbCallsRes
+            };
+            res.send(result);
+
+        });
+    }
+
+});
+
+
+
+router.post('/addMovie', function(req, res){
+
+    var params = req.body;
+    if( !params.title || params.title === '') {
+        console.log("title of movie missing");
+        
+        var result = {
+            error: "params missing",
+            result: null
+        }
+        res.send(result);
+    } else {
+        var movie = {
+            title: params.title,
+            poster: params.poster || null,
+            year: params.year || null,
+            country: params.country || null,
+            imdb_rating: params.imdb_rating || null,
+            genres: params.genres || null,
+            images: params.images || null,
+        };
+        console.log(movie);
+
+        // call db to sava movie
+        dbCalls.insertMovie(movie, function(err, dbCallsRes){
+            var result = {
+                error: err,
+                result: dbCallsRes
+            }
+            res.send(result);
+        });
+
+    }
+});
+
 
 
 module.exports = router;

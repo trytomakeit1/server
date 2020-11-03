@@ -5,6 +5,7 @@ var jwt = require("jsonwebtoken");
 var url =  "mongodb://localhost:27017";
 var dbName = "gdb";
 var userCollection = "users";
+var rentCollection = "rent";
 var movieCollection = "movies";
 
 var secretCode = "newserver1*";
@@ -162,7 +163,7 @@ class dbCalls {
                         console.log(res);
 
                         // the user exists, now add it to the movie collection
-                        db.collection(movieCollection).update({userId: new ObjectId(res._id)},
+                        db.collection(rentCollection).update({userId: new ObjectId(res._id)},
                             {$push:{movies:{movieId: params.movieId, rentDate:new Date()}}}, {upsert: true}, 
                             function(err, res){
 
@@ -180,6 +181,72 @@ class dbCalls {
             }
 
         });
+    }
+
+
+
+    static moviesRented(params, cb){
+
+        console.log("params in movieRented dbcall", params);
+        mongodb.connect(url, function(err, mongoClient){
+
+            if(err){
+                console.log("Error-moviesRented: Problem mongodb connect", err);
+                cb("There is a problem connecting the database. Try again later.");
+
+            } else{
+
+                var db = mongoClient.db(dbName);
+
+                // get only movies rented
+                db.collection(userCollection).aggregate([
+                    {$lookup:{from: rentCollection, localField: "_id", foreignField: "userId", as: "moviesRented"}},
+                    {$match:{username: params.username}},
+                    {$project: {_id: 0, moviesRented: 1} }])
+                    .next(function(err, res){
+                    
+                        if (err) {
+                            console.error("Error occured in retrieving movies", err);
+                            cb("A problem occured. contact the administrator or try again later.");
+
+                        } else {
+                            console.log("Movies retrieved successfully", res);
+                            cb(null, res.moviesRented[0].movies);
+                        }
+
+                });
+              
+            }
+        });
+
+    }
+
+
+
+    static insertMovie(params, cb){
+
+        mongodb.connect(url, function(err, mongoClient){
+
+            if(err){
+                console.log("Error-insertMovie: Problem mongodb connect", err);
+                cb("There is a problem connecting the database. Try again later.");
+            } else{
+                var db = mongoClient.db(dbName);
+                db.collection(movieCollection).insertOne(params, function(err, res){
+
+                   if(err){
+                        console.error("Error occured in inserting movies", err);
+                        cb("A problem occured. contact the administrator or try again later.");
+                   }
+                   else {
+                        console.log("Movies inserted successfully" + res);
+                        cb(null, res);
+                   }
+                });
+            }
+
+        });
+        
     }
 }
 
