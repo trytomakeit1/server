@@ -138,7 +138,7 @@ class dbCalls {
         });
     }
 
-    
+
     static rentMovie(params, cb){
 
         mongodb.connect(url, function(err, mongoClient){
@@ -248,6 +248,36 @@ class dbCalls {
         });
         
     }
+
+
+
+
+    static moviesList(cb) {
+        mongodb.connect(url, function(err, mongoClient){
+
+            if(err){
+                console.log("Error-moviesList: Problem mongodb connect", err);
+                cb("There is a problem connecting the database. Try again later.");
+
+            } else{
+                var db = mongoClient.db(dbName);
+
+                db.collection(movieCollection).find({}).toArray(function(err, res){
+
+                    if(err){
+                        console.error("Error occured in retrieving movies", err);
+                        cb("A problem occured. contact the administrator or try again later.");
+
+                    } else {
+                        console.log("Movies retrieved successfully", res);
+                        cb(null, res);
+                    }
+                });
+
+            }
+        });
+    }
+
 }
 
 module.exports = dbCalls;

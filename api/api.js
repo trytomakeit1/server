@@ -218,4 +218,18 @@ router.post('/addMovie', function(req, res){
 
 
 
+router.get('/movies', function(req, res){
+
+    dbCalls.moviesList(function(err, dbCallsRes){
+
+        var result = {
+            error: err,
+            result: dbCallsRes
+        }
+        res.send(result);
+    });
+});
+
+
+
 module.exports = router;
