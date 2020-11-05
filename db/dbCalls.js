@@ -215,6 +215,7 @@ class dbCalls {
 
                             // for each movie, get details
                             var moviesId = [];
+                            if(res.moviesRented.length > 0){
                             rentedMovies = res.moviesRented[0].movies;
                             for(var i = 0; i < res.moviesRented[0].movies.length; i++){
                                 moviesId.push(new ObjectId(res.moviesRented[0].movies[i].movieId));
@@ -231,7 +232,7 @@ class dbCalls {
                                         for(var k = 0 ; k < res.length ; k++) {
                                             if(res[k]._id.toString() === rentedMovies[j].movieId){
                                                 var o = {
-                                                    movie: res,
+                                                    movie: res[k],
                                                     rentDate: rentedMovies[j].rentDate
                                                 };
                                                 finalRentedMovies.push(o);
@@ -244,6 +245,10 @@ class dbCalls {
                                 }
                             });
 
+
+                            } else{
+                                cb(null, finalRentedMovies);
+                            }
                         }
 
                 });
