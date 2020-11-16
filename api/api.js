@@ -1,6 +1,10 @@
 var express = require("express");
 var router = express.Router();
 var dbCalls = require("../db/dbCalls");
+var fs = require('fs');
+var path = require('path');
+var multer = require('multer');
+
 
 router.get("/index", function(req, res){
     res.send("in api");
@@ -181,39 +185,108 @@ router.get('/rentedMovies/:username', function(req, res){
 
 
 
+var multerStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.dirname(__dirname) + '\\public\\' + file.fieldname)
+    },
+    filename: function (req, file, cb) {
+        cb(null, req.body.title + "_" + file.originalname)
+    }
+});
+
+
+
 router.post('/addMovie', function(req, res){
 
-    var params = req.body;
-    if( !params.title || params.title === '') {
-        console.log("title of movie missing");
-        
-        var result = {
-            error: "params missing",
-            result: null
-        }
-        res.send(result);
-    } else {
-        var movie = {
-            title: params.title,
-            poster: params.poster || null,
-            year: params.year || null,
-            country: params.country || null,
-            imdb_rating: params.imdb_rating || null,
-            genres: params.genres || null,
-            images: params.images || null,
-        };
-        console.log(movie);
+    // upload files
+    //Error for uploading more than one file for poster
+    var upload = multer({
+        storage: multerStorage
+    }).fields([ {name: "images"}, {name: "poster", maxCount: 1}]);
 
-        // call db to sava movie
-        dbCalls.insertMovie(movie, function(err, dbCallsRes){
+    upload(req, res, function(err){
+
+        if (err instanceof multer.MulterError) {
+            // A Multer error occurred when uploading.
+            //fs.unlinkSync(path.dirname(__dirname) + '\\public\\images\\');
+
+            console.log("Multer Error", err);
+
             var result = {
-                error: err,
-                result: dbCallsRes
-            }
+                error: "A problem occured while uploading files",
+                result: null
+            };
             res.send(result);
-        });
 
-    }
+        } else if (err) {
+            // An unknown error occurred when uploading.
+            //fs.unlinkSync(path.dirname(__dirname) + '\\public\\images\\');
+            console.log("Error", err);
+
+            var result = {
+                error: "A problem occured while uploading files",
+                result: null
+            };
+            res.send(result);
+        } else{
+
+            var params = req.body;
+            var error = '';
+
+            if( !params.title || params.title === '') {
+                console.log("title of movie missing");
+                error= "Movie title is missing";
+            }
+            if( !params.year || params.year === '') {
+                console.log("year of movie missing");
+                error= "Movie year is missing";
+            }
+            if( !params.country || params.country === '') {
+                console.log("country of movie missing");
+                error= "Movie country is missing";
+            }
+            if( !params.genres || params.genres.length <= 0) {
+                console.log("genres of movie missing");
+                error= "Movie genres is missing";
+
+            }
+            if(error.length > 0) {
+                //fs.unlinkSync(path.dirname(__dirname) + '\\public\\images\\');
+
+                var result = {
+                    error: error,
+                    result: null
+                }
+                res.send(result);
+
+            } else {
+                // call DB to save movie info
+                dbCalls.insertMovie(params, function(err, dbCallsRes){
+                    if(err) {
+                        console.log("inserting movie error", err);
+                        // delete files if can not save to DB.
+                        //fs.unlinkSync(path.dirname(__dirname) + '\\public\\images\\');
+
+                        var result = {
+                            error: "Error Could not insert the movie",
+                            result: null
+                        };
+                        res.send(result);
+                    } else {
+                        var result = {
+                            error: null,
+                            result: dbCallsRes
+                        };
+                        res.send(result);
+                    }
+
+                });
+            }
+
+        }
+
+    });
+
 });
 
 
