@@ -187,10 +187,24 @@ router.get('/rentedMovies/:username', function(req, res){
 
 var multerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.dirname(__dirname) + '\\public\\' + file.fieldname)
+        let title = req.body.title.replace(/\s/g, "_");
+        const dir = path.dirname(__dirname) + '\\public\\' + file.fieldname + "\\" + title;
+
+        if(!fs.existsSync(dir)){
+            fs.mkdir(dir, function(err, directory){
+                if(err) {
+                    cb("Error creating the folder");
+                } else {
+                    cb(null, dir);
+                }
+            });
+        } else {
+            cb(null, dir);
+        }
+
     },
     filename: function (req, file, cb) {
-        cb(null, req.body.title + "_" + file.originalname)
+        cb(null, file.originalname)
     }
 });
 
@@ -206,11 +220,12 @@ router.post('/addMovie', function(req, res){
 
     upload(req, res, function(err){
 
+        console.log(req.body);
         if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
             //fs.unlinkSync(path.dirname(__dirname) + '\\public\\images\\');
 
-            console.log("Multer Error", err);
+            console.log("Multer Error:", err);
 
             var result = {
                 error: "A problem occured while uploading files",
